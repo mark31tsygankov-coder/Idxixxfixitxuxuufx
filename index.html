@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>OMNIRO</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: #000000;
+      --card: #141414;
+      --card2: #1c1c1c;
+      --border: #2a2a2a;
+      --text: #ffffff;
+      --muted: #8a8a8a;
+      --soft: #2e2e2e;
+      --radius: 20px;
+      --radius-sm: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+      min-height: 100%;
+      overscroll-behavior: none;
+    }
+    body { padding: 0 14px 100px; }
+
+    /* ── header ── */
+    .welcome-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 8px 2px 4px;
+    }
+    .welcome-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+    .welcome-name {
+      font-size: 26px;
+      font-weight: 750;
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+    }
+    .bell {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      transition: transform 0.12s, background 0.15s;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+    .bell:active { transform: scale(0.92); background: #252525; }
+
+    /* ── cards ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-top: 14px;
+    }
+    .balance-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .balance-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .icon-box {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      background: var(--card2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      border: 1px solid var(--border);
+    }
+    .bal-label { font-size: 12px; color: var(--muted); }
+    .bal-value { font-size: 22px; font-weight: 750; margin-top: 1px; }
+    .btn-white {
+      background: #fff;
+      color: #000;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 650;
+      cursor: pointer;
+      transition: transform 0.12s, opacity 0.15s;
+      white-space: nowrap;
+    }
+    .btn-white:active { transform: scale(0.96); opacity: 0.9; }
+    .link-muted {
+      display: block;
+      text-align: right;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+      cursor: pointer;
+    }
+
+    /* ── menu list ── */
+    .menu-list {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-top: 14px;
+      overflow: hidden;
+    }
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 15px 16px;
+      cursor: pointer;
+      transition: background 0.12s;
+      border-bottom: 1px solid var(--border);
+    }
+    .menu-item:last-child { border-bottom: none; }
+    .menu-item:active { background: #1a1a1a; }
+    .menu-item .ico {
+      width: 36px; height: 36px;
+      border-radius: 11px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .menu-item .txt { flex: 1; font-size: 15px; font-weight: 550; }
+    .menu-item .chev { color: var(--muted); font-size: 18px; }
+
+    /* ── subs section ── */
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 22px;
+      margin-bottom: 10px;
+      padding: 0 2px;
+    }
+    .section-head h2 {
+      font-size: 17px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge-count {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 12px;
+      padding: 2px 9px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .sub-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    .sub-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .sub-top .ico {
+      width: 42px; height: 42px;
+      border-radius: 13px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .sub-name { font-size: 16px; font-weight: 700; }
+    .sub-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .sub-actions {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .sub-act {
+      background: #0d0d0d;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 4px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.12s, background 0.12s;
+    }
+    .sub-act:active { transform: scale(0.95); background: #1a1a1a; }
+    .sub-act .ai { font-size: 18px; margin-bottom: 5px; display: block; }
+    .sub-act .al { font-size: 11px; color: #ccc; font-weight: 500; }
+    .sub-act.danger .al { color: #ff6b6b; }
+    .sub-act.danger .ai { filter: none; }
+
+    .empty-sub {
+      text-align: center;
+      padding: 22px 12px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    /* ── bottom bar ── */
+    .bottom-bar {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+      background: linear-gradient(to top, #000 60%, transparent);
+      display: flex;
+      gap: 10px;
+      z-index: 50;
+    }
+    .bbtn {
+      flex: 1;
+      border: none;
+      border-radius: 999px;
+      padding: 15px 12px;
+      font-size: 15px;
+      font-weight: 650;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.12s, opacity 0.12s;
+    }
+    .bbtn:active { transform: scale(0.97); }
+    .bbtn.primary { background: #fff; color: #000; }
+    .bbtn.secondary {
+      background: var(--card2);
+      color: #fff;
+      border: 1px solid var(--border);
+    }
+
+    /* ── screens ── */
+    .screen { display: none; animation: fade 0.25s ease; }
+    .screen.active { display: block; }
+    @keyframes fade {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .page-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0 16px;
+    }
+    .back-btn {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      color: #fff;
+    }
+    .back-btn:active { transform: scale(0.92); }
+    .page-title { font-size: 20px; font-weight: 750; }
+
+    /* toggle Себе / Подарить */
+    .toggle {
+      display: flex;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px;
+      margin-bottom: 16px;
+    }
+    .toggle button {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      padding: 11px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .toggle button.on {
+      background: #fff;
+      color: #000;
+    }
+
+    .input {
+      width: 100%;
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      color: #fff;
+      font-size: 15px;
+      outline: none;
+      margin-top: 8px;
+    }
+    .input:focus { border-color: #444; }
+    .input::placeholder { color: #555; }
+
+    .btn-block {
+      width: 100%;
+      border: none;
+      border-radius: 999px;
+      padding: 15px;
+      font-size: 15px;
+      font-weight: 650;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: transform 0.12s, opacity 0.12s;
+    }
+    .btn-block:active { transform: scale(0.98); }
+    .btn-block.primary { background: #fff; color: #000; }
+    .btn-block.ghost {
+      background: var(--card2);
+      color: #fff;
+      border: 1px solid var(--border);
+    }
+    .btn-block:disabled {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    .btn-block.muted {
+      background: #1a1a1a;
+      color: #555;
+      border: 1px solid var(--border);
+    }
+
+    .plan {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: transform 0.12s, border-color 0.15s, box-shadow 0.15s;
+      position: relative;
+    }
+    .plan:active { transform: scale(0.98); }
+    .plan.sel {
+      border-color: #fff;
+      box-shadow: 0 0 0 1px #fff;
+    }
+    .plan .badge {
+      position: absolute;
+      top: -9px; right: 14px;
+      background: #fff; color: #000;
+      font-size: 10px; font-weight: 800;
+      padding: 3px 9px; border-radius: 999px;
+    }
+    .plan-name { font-size: 16px; font-weight: 700; }
+    .plan-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .plan-price { font-size: 20px; font-weight: 800; text-align: right; }
+    .plan-per { font-size: 11px; color: var(--muted); text-align: right; }
+
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      background: #fff;
+      color: #000;
+      padding: 12px 20px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.25s;
+      z-index: 100;
+      white-space: nowrap;
+      max-width: 90vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .loader {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid #333;
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hint { font-size: 12px; color: var(--muted); text-align: center; margin-top: 12px; line-height: 1.4; }
+    .key-box {
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      word-break: break-all;
+      color: #bbb;
+      margin-top: 10px;
+      line-height: 1.4;
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- ════════ HOME ════════ -->
+  <div class="screen active" id="home">
+    <div class="welcome-row">
+      <div>
+        <div class="welcome-label">Добро пожаловать</div>
+        <div class="welcome-name" id="userName">…</div>
+      </div>
+      <div class="bell" onclick="onBell()" title="Уведомления">🔔</div>
+    </div>
+
+    <div class="card">
+      <div class="balance-row">
+        <div class="balance-left">
+          <div class="icon-box">💳</div>
+          <div>
+            <div class="bal-label">Подписка</div>
+            <div class="bal-value" id="balValue">—</div>
+          </div>
+        </div>
+        <button class="btn-white" onclick="go('buy')">Купить</button>
+      </div>
+      <div class="link-muted" onclick="go('subs')">История / детали →</div>
+    </div>
+
+    <div class="menu-list">
+      <div class="menu-item" onclick="go('promo')">
+        <div class="ico">🎟</div>
+        <div class="txt">Промокод</div>
+        <div class="chev">›</div>
+      </div>
+      <div class="menu-item" onclick="go('help')">
+        <div class="ico">📱</div>
+        <div class="txt">Помощь и настройка</div>
+        <div class="chev">›</div>
+      </div>
+      <div class="menu-item" onclick="go('support')">
+        <div class="ico">❓</div>
+        <div class="txt">Поддержка</div>
+        <div class="chev">›</div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h2>🌐 Мои подписки</h2>
+      <span class="badge-count" id="subCount">0</span>
+    </div>
+
+    <div id="subsHome"></div>
+  </div>
+
+  <!-- ════════ BUY ════════ -->
+  <div class="screen" id="buy">
+    <div class="page-top">
+      <div class="back-btn" onclick="go('home')">←</div>
+      <div class="page-title">Покупка</div>
+    </div>
+
+    <div class="toggle">
+      <button type="button" id="tabSelf" class="on" onclick="setBuyMode(false)">Себе</button>
+      <button type="button" id="tabGift" onclick="setBuyMode(true)">🎁 Подарить</button>
+    </div>
+
+    <div id="giftBlock" class="hidden">
+      <div class="card" style="margin-top:0">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Кому подарить</div>
+        <input class="input" id="giftInput" placeholder="@username или ID" />
+        <button class="btn-block muted" id="checkBtn" onclick="checkGiftTarget()" style="margin-top:10px">Проверить</button>
+        <div id="giftOk" class="hidden" style="margin-top:10px;font-size:13px;color:#aaa"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px" id="plansList"></div>
+
+    <button class="btn-block primary" id="payBtn" onclick="doPay()" disabled>
+      Оплатить
+    </button>
+    <p class="hint">Оплата картой / СБП / криптой · активация сразу</p>
+  </div>
+
+  <!-- ════════ SUBS ════════ -->
+  <div class="screen" id="subs">
+    <div class="page-top">
+      <div class="back-btn" onclick="go('home')">←</div>
+      <div class="page-title">Мои подписки</div>
+    </div>
+    <div id="subsFull"></div>
+  </div>
+
+  <!-- ════════ PROMO ════════ -->
+  <div class="screen" id="promo">
+    <div class="page-top">
+      <div class="back-btn" onclick="go('home')">←</div>
+      <div class="page-title">Промокод</div>
+    </div>
+    <div class="card">
+      <input class="input" id="promoInput" placeholder="Введите промокод" style="margin-top:0;text-transform:uppercase" />
+      <button class="btn-block primary" onclick="applyPromo()">Применить</button>
+      <p class="hint">Промокод применится к следующей покупке</p>
+    </div>
+  </div>
+
+  <!-- ════════ HELP ════════ -->
+  <div class="screen" id="help">
+    <div class="page-top">
+      <div class="back-btn" onclick="go('home')">←</div>
+      <div class="page-title">Помощь и настройка</div>
+    </div>
+    <div class="card">
+      <p style="font-size:14px;line-height:1.55;color:#ccc">
+        1. Купите подписку<br>
+        2. Скопируйте ключ (Конфиг)<br>
+        3. Вставьте в приложение: <b>Hiddify</b>, <b>v2rayN</b>, <b>Streisand</b>, <b>Happ</b> и др.<br><br>
+        Ключ — это ссылка подписки. Обновляется автоматически.
+      </p>
+      <button class="btn-block ghost" style="margin-top:14px" onclick="copyKey()">Скопировать ключ</button>
+    </div>
+  </div>
+
+  <!-- ════════ SUPPORT ════════ -->
+  <div class="screen" id="support">
+    <div class="page-top">
+      <div class="back-btn" onclick="go('home')">←</div>
+      <div class="page-title">Поддержка</div>
+    </div>
+    <div class="card">
+      <p style="font-size:14px;line-height:1.5;color:#ccc;margin-bottom:14px">
+        Напишите вопрос — ответим в чате с ботом.
+      </p>
+      <button class="btn-block primary" onclick="openSupport()">Написать в поддержку</button>
+    </div>
+  </div>
+
+  <!-- ════════ REF ════════ -->
+  <div class="screen" id="ref">
+    <div class="page-top">
+      <div class="back-btn" onclick="go('home')">←</div>
+      <div class="page-title">Рефералы</div>
+    </div>
+    <div class="card">
+      <p style="font-size:14px;line-height:1.5;color:#ccc">
+        Приглашай друзей и получай бонусы. Ссылка для приглашения:
+      </p>
+      <div class="key-box" id="refLink">—</div>
+      <button class="btn-block primary" style="margin-top:12px" onclick="copyRef()">Скопировать ссылку</button>
+      <p class="hint">Реферальная программа скоро будет расширена</p>
+    </div>
+  </div>
+
+  <!-- bottom bar only on home -->
+  <div class="bottom-bar" id="bottomBar">
+    <button class="bbtn primary" onclick="go('buy')">🛒 Купить</button>
+    <button class="bbtn secondary" onclick="go('ref')">👥 Рефералы</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      try {
+        tg.setHeaderColor('#000000');
+        tg.setBackgroundColor('#000000');
+      } catch(e) {}
+    }
+
+    let userData = null;
+    let giftMode = false;
+    let selectedPlan = 'm3';
+    let giftTargetOk = false;
+    let botUsername = '';
+
+    const PLANS_FB = {
+      m1: { name: '1 месяц', days: 30, price: 79 },
+      m3: { name: '3 месяца', days: 90, price: 219 },
+      m6: { name: '6 месяцев', days: 180, price: 399 }
+    };
+
+    function haptic(t='light') {
+      try {
+        if (t==='success') tg?.HapticFeedback?.notificationOccurred('success');
+        else if (t==='error') tg?.HapticFeedback?.notificationOccurred('error');
+        else tg?.HapticFeedback?.impactOccurred(t);
+      } catch(e) {}
+    }
+    function toast(m, ms=2200) {
+      const el = document.getElementById('toast');
+      el.textContent = m;
+      el.classList.add('show');
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.classList.remove('show'), ms);
+    }
+    function initData() { return tg?.initData || ''; }
+
+    function go(id) {
+      haptic('light');
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.getElementById('bottomBar').style.display = (id === 'home') ? 'flex' : 'none';
+      if (id === 'buy') { renderPlans(); updatePayBtn(); }
+      if (id === 'subs') renderSubsFull();
+      if (id === 'ref') setupRef();
+    }
+
+    function onBell() {
+      haptic('light');
+      if (userData?.active) toast('Подписка активна до ' + (userData.expires_fmt || '—'));
+      else toast('Нет активной подписки — купите тариф');
+    }
+
+    async function loadUser() {
+      // username from Telegram
+      try {
+        const u = tg?.initDataUnsafe?.user;
+        if (u) {
+          document.getElementById('userName').textContent = u.username ? '@' + u.username : (u.first_name || 'user');
+        }
+      } catch(e) {}
+
+      try {
+        const res = await fetch('/api/user', { headers: { 'X-Telegram-Init-Data': initData() } });
+        if (!res.ok) throw new Error('api');
+        userData = await res.json();
+        if (!userData.ok) throw new Error('auth');
+        if (userData.bot_username) botUsername = userData.bot_username;
+        renderHome();
+      } catch (e) {
+        console.warn(e);
+        userData = { ok: false, active: false, plans: PLANS_FB, sub_link: '' };
+        document.getElementById('balValue').textContent = 'нет данных';
+        document.getElementById('subsHome').innerHTML = '<div class="sub-card"><div class="empty-sub">Открой приложение из Telegram-бота</div></div>';
+        renderPlans();
+      }
+    }
+
+    function renderHome() {
+      const active = !!userData.active;
+      document.getElementById('balValue').textContent = active
+        ? ('до ' + (userData.expires_fmt || '—').split(' ')[0])
+        : 'нет';
+      document.getElementById('subCount').textContent = active ? '1' : '0';
+
+      const box = document.getElementById('subsHome');
+      if (active) {
+        box.innerHTML = `
+          <div class="sub-card">
+            <div class="sub-top">
+              <div class="ico">🌐</div>
+              <div style="flex:1">
+                <div class="sub-name">OMNIRO VPN</div>
+                <div class="sub-meta">до ${userData.expires_fmt || '—'} · ~${userData.days_left || 0} дн.</div>
+              </div>
+            </div>
+            <div class="sub-actions">
+              <div class="sub-act" onclick="copyKey()"><span class="ai">🔑</span><span class="al">Конфиг</span></div>
+              <div class="sub-act" onclick="go('buy')"><span class="ai">🔄</span><span class="al">Продлить</span></div>
+              <div class="sub-act" onclick="openKey()"><span class="ai">↗️</span><span class="al">Открыть</span></div>
+              <div class="sub-act danger" onclick="toast('Для отключения напишите в поддержку')"><span class="ai">🗑</span><span class="al">Удалить</span></div>
+            </div>
+            ${userData.sub_link ? `<div class="key-box">${esc(userData.sub_link)}</div>` : ''}
+          </div>`;
+      } else {
+        box.innerHTML = `
+          <div class="sub-card">
+            <div class="empty-sub">Пока нет активных подписок.<br>Нажмите «Купить», чтобы оформить.</div>
+          </div>`;
+      }
+    }
+
+    function renderSubsFull() {
+      const box = document.getElementById('subsFull');
+      if (userData?.active) {
+        box.innerHTML = `
+          <div class="sub-card">
+            <div class="sub-top">
+              <div class="ico">🌐</div>
+              <div>
+                <div class="sub-name">OMNIRO VPN</div>
+                <div class="sub-meta">Активна до ${userData.expires_fmt} · ~${userData.days_left} дн.</div>
+              </div>
+            </div>
+            <div class="sub-actions">
+              <div class="sub-act" onclick="copyKey()"><span class="ai">🔑</span><span class="al">Конфиг</span></div>
+              <div class="sub-act" onclick="go('buy')"><span class="ai">🔄</span><span class="al">Продлить</span></div>
+              <div class="sub-act" onclick="openKey()"><span class="ai">↗️</span><span class="al">Открыть</span></div>
+              <div class="sub-act danger" onclick="toast('Напишите в поддержку для отключения')"><span class="ai">🗑</span><span class="al">Удалить</span></div>
+            </div>
+            ${userData.sub_link ? `<div class="key-box">${esc(userData.sub_link)}</div>` : '<p class="empty-sub">Ключ появится после активации</p>'}
+          </div>
+          <button class="btn-block ghost" style="margin-top:12px" onclick="go('buy')">Купить / продлить</button>`;
+      } else {
+        box.innerHTML = `
+          <div class="sub-card"><div class="empty-sub">Нет активных подписок</div></div>
+          <button class="btn-block primary" style="margin-top:12px" onclick="go('buy')">Купить VPN</button>`;
+      }
+    }
+
+    function esc(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function setBuyMode(gift) {
+      giftMode = gift;
+      giftTargetOk = false;
+      document.getElementById('tabSelf').classList.toggle('on', !gift);
+      document.getElementById('tabGift').classList.toggle('on', gift);
+      document.getElementById('giftBlock').classList.toggle('hidden', !gift);
+      document.getElementById('giftOk').classList.add('hidden');
+      updatePayBtn();
+      haptic('light');
+    }
+
+    function checkGiftTarget() {
+      const v = document.getElementById('giftInput').value.trim();
+      if (!v) { toast('Введите @username или ID'); haptic('error'); return; }
+      giftTargetOk = true;
+      document.getElementById('giftOk').classList.remove('hidden');
+      document.getElementById('giftOk').textContent = 'Получатель: ' + v;
+      document.getElementById('checkBtn').className = 'btn-block ghost';
+      document.getElementById('checkBtn').textContent = '✓ Проверено';
+      updatePayBtn();
+      haptic('success');
+      toast('Можно выбирать тариф');
+    }
+
+    function renderPlans() {
+      const plans = userData?.plans || PLANS_FB;
+      const el = document.getElementById('plansList');
+      el.innerHTML = '';
+      ['m1','m3','m6'].forEach(k => {
+        const p = plans[k];
+        if (!p) return;
+        const div = document.createElement('div');
+        div.className = 'plan' + (selectedPlan === k ? ' sel' : '');
+        div.innerHTML = `
+          ${k==='m3' ? '<span class="badge">ВЫГОДНО</span>' : ''}
+          <div>
+            <div class="plan-name">${p.name}</div>
+            <div class="plan-desc">${p.days} дней</div>
+          </div>
+          <div>
+            <div class="plan-price">${p.price} ₽</div>
+            <div class="plan-per">~${Math.round(p.price/(p.days/30))} ₽/мес</div>
+          </div>`;
+        div.onclick = () => {
+          selectedPlan = k;
+          haptic('light');
+          renderPlans();
+          updatePayBtn();
+        };
+        el.appendChild(div);
+      });
+    }
+
+    function updatePayBtn() {
+      const btn = document.getElementById('payBtn');
+      const plans = userData?.plans || PLANS_FB;
+      const p = plans[selectedPlan];
+      if (!p) { btn.disabled = true; return; }
+      if (giftMode && !giftTargetOk) {
+        btn.disabled = true;
+        btn.textContent = 'Сначала укажите получателя';
+        return;
+      }
+      btn.disabled = false;
+      btn.textContent = (giftMode ? 'Подарить · ' : 'Оплатить · ') + p.price + ' ₽';
+    }
+
+    async function doPay() {
+      const btn = document.getElementById('payBtn');
+      const plans = userData?.plans || PLANS_FB;
+      const p = plans[selectedPlan];
+      if (!p) return;
+      let target = null;
+      if (giftMode) {
+        target = document.getElementById('giftInput').value.trim().replace(/^@/, '');
+        if (!target) { toast('Укажите получателя'); return; }
+        // if username-like, still send as string; backend expects int ID for gift
+        // try parse as ID
+        if (!/^\d+$/.test(target)) {
+          toast('Пока нужен числовой Telegram ID');
+          haptic('error');
+          return;
+        }
+      }
+      btn.disabled = true;
+      const old = btn.textContent;
+      btn.innerHTML = '<span class="loader"></span>';
+      haptic('medium');
+      try {
+        const res = await fetch('/api/order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Telegram-Init-Data': initData()
+          },
+          body: JSON.stringify({
+            plan: selectedPlan,
+            target_id: target || undefined
+          })
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'error');
+        haptic('success');
+        toast('Открываем оплату…');
+        setTimeout(() => {
+          try { tg.openLink(data.pay_url); } catch(e) { window.open(data.pay_url, '_blank'); }
+        }, 250);
+        try {
+          tg.sendData(JSON.stringify({
+            action: giftMode ? 'gift_plan' : 'buy_plan',
+            plan: selectedPlan,
+            target_id: target,
+            order_id: data.order_id
+          }));
+        } catch(e) {}
+      } catch (e) {
+        console.error(e);
+        haptic('error');
+        toast('Ошибка: ' + (e.message || 'позже'));
+        try {
+          tg.sendData(JSON.stringify({
+            action: giftMode ? 'gift_plan' : 'buy_plan',
+            plan: selectedPlan,
+            target_id: target
+          }));
+        } catch(err) {}
+      } finally {
+        btn.disabled = false;
+        btn.textContent = old;
+        updatePayBtn();
+      }
+    }
+
+    function copyKey() {
+      const link = userData?.sub_link;
+      if (!link) { toast('Ключ пока недоступен'); haptic('error'); return; }
+      haptic('success');
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(link).then(() => toast('Конфиг скопирован')).catch(() => fbCopy(link));
+      } else fbCopy(link);
+    }
+    function fbCopy(t) {
+      const ta = document.createElement('textarea');
+      ta.value = t; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); toast('Скопировано'); } catch(e) { toast('Скопируйте вручную'); }
+      ta.remove();
+    }
+    function openKey() {
+      const link = userData?.sub_link;
+      if (!link) { toast('Нет ссылки'); return; }
+      haptic('light');
+      try { tg.openLink(link); } catch(e) { window.open(link, '_blank'); }
+    }
+
+    function applyPromo() {
+      const code = document.getElementById('promoInput').value.trim().toUpperCase();
+      if (!code) { toast('Введите код'); return; }
+      haptic('light');
+      try {
+        tg.sendData(JSON.stringify({ action: 'promo', code }));
+        toast('Отправили в бот — проверьте чат');
+        setTimeout(() => tg.close(), 600);
+      } catch(e) {
+        toast('Откройте бота и введите промокод там');
+      }
+    }
+
+    function openSupport() {
+      haptic('light');
+      try {
+        tg.sendData(JSON.stringify({ action: 'open_support' }));
+        toast('Напишите сообщение в чат');
+        setTimeout(() => tg.close(), 500);
+      } catch(e) { toast('Откройте бота → Поддержка'); }
+    }
+
+    function setupRef() {
+      try {
+        const u = tg?.initDataUnsafe?.user?.id;
+        const link = botUsername
+          ? `https://t.me/${botUsername}?start=ref${u || ''}`
+          : (u ? `Реф-код: ${u}` : '—');
+        document.getElementById('refLink').textContent = link;
+      } catch(e) {
+        document.getElementById('refLink').textContent = '—';
+      }
+    }
+    function copyRef() {
+      const t = document.getElementById('refLink').textContent;
+      if (!t || t === '—') return;
+      haptic('success');
+      if (navigator.clipboard?.writeText) navigator.clipboard.writeText(t).then(() => toast('Ссылка скопирована'));
+      else fbCopy(t);
+    }
+
+    // gift input live
+    document.getElementById('giftInput')?.addEventListener('input', () => {
+      giftTargetOk = false;
+      document.getElementById('giftOk').classList.add('hidden');
+      document.getElementById('checkBtn').className = 'btn-block muted';
+      document.getElementById('checkBtn').textContent = 'Проверить';
+      updatePayBtn();
+    });
+
+    // try get bot username from start param or leave empty
+    try {
+      // will be filled if we add endpoint later
+    } catch(e) {}
+
+    loadUser();
+  </script>
+</body>
+</html>
